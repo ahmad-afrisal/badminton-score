@@ -136,41 +136,98 @@ function updateUI() {
 
 // ===== LOGIC =====
 
+// function swapPlayers(team) {
+//   const r = team + '-right';
+//   const l = team + '-left';
+
+//   [players[r], players[l]] = [players[l], players[r]];
+
+//   // sisi servis ikut berubah karena posisi bertukar
+//   serveSide = serveSide === 'right' ? 'left' : 'right';
+// }
+
 function swapPlayers(team) {
   const r = team + '-right';
   const l = team + '-left';
-
   [players[r], players[l]] = [players[l], players[r]];
+}
 
-  // sisi servis ikut berubah karena posisi bertukar
-  serveSide = serveSide === 'right' ? 'left' : 'right';
+
+
+function getServeSide(team) {
+  const score = team === 'A' ? scoreA : scoreB;
+  return score % 2 === 0 ? 'right' : 'left';
+}
+
+function getServeSide(score) {
+  return score % 2 === 0 ? 'right' : 'left';
+}
+
+
+function swapCourtSides() {
+  const tempRight = players['A-right'];
+  const tempLeft  = players['A-left'];
+
+  players['A-right'] = players['B-right'];
+  players['A-left']  = players['B-left'];
+
+  players['B-right'] = tempRight;
+  players['B-left']  = tempLeft;
+}
+
+function resetPositionsForNewSet(winnerTeam) {
+  if (winnerTeam === 'A') {
+    players['A-right'] = 'A1';
+    players['A-left']  = 'A2';
+  } else {
+    players['B-right'] = 'B1';
+    players['B-left']  = 'B2';
+  }
+
+  serverTeam = winnerTeam;
+  serveSide = 'right'; // 0 = genap
 }
 
 
 function checkSetWinner() {
   const diff = Math.abs(scoreA - scoreB);
-  const finish = (scoreA >= 21 || scoreB >= 21) && diff >= 2 || scoreA === 30 || scoreB === 30;
+  const finish =
+    ((scoreA >= 21 || scoreB >= 21) && diff >= 2) ||
+    scoreA === 30 || scoreB === 30;
 
   if (!finish) return;
 
+  let winnerTeam;
+
   if (scoreA > scoreB) {
     setA++;
-    serverTeam = 'A';
+    winnerTeam = 'A';
   } else {
     setB++;
-    serverTeam = 'B';
+    winnerTeam = 'B';
   }
 
+  // ✅ TUKAR SISI LAPANGAN (HANYA SEKALI)
+  swapCourtSides();
+
+  // ✅ SET SERVER AWAL SET BARU
+  resetPositionsForNewSet(winnerTeam);
+
+  // ✅ RESET SKOR
   scoreA = 0;
   scoreB = 0;
-  serveSide = 'right';
+
+  // ✅ PINDAH KE SET BERIKUTNYA
   currentSet++;
 
+  // ✅ CEK AKHIR MATCH
   if (setA === 2 || setB === 2) {
     alert((setA === 2 ? 'Team A' : 'Team B') + ' menang pertandingan');
     resetMatch();
   }
 }
+
+
 
 function addPoint(team) {
   history.push({
@@ -178,21 +235,32 @@ function addPoint(team) {
     players: JSON.parse(JSON.stringify(players))
   });
 
+  // tambah skor
   if (team === 'A') scoreA++;
   else scoreB++;
 
   if (team === serverTeam) {
-    // ✅ SERVIS & MENANG → WAJIB SWAP ORANG
+    // 🟢 SERVER MENANG
+    // pemain bertukar
     swapPlayers(team);
+
+    // tentukan sisi servis BERDASARKAN SKOR
+    const score = team === 'A' ? scoreA : scoreB;
+    serveSide = getServeSide(score);
+
   } else {
-    // ✅ TERIMA & MENANG → SERVIS PINDAH (TANPA SWAP)
+    // 🔵 PENERIMA MENANG → SERVIS PINDAH
     serverTeam = team;
-    serveSide = 'right';
+
+    // TIDAK swap pemain
+    const score = team === 'A' ? scoreA : scoreB;
+    serveSide = getServeSide(score);
   }
 
   checkSetWinner();
   updateUI();
 }
+
 
 function undo() {
   if (!history.length) return;

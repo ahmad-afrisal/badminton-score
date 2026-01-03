@@ -70,27 +70,55 @@ let serverTeam = 'A';
 let serveSide = 'right'; // right | left
 let history = [];
 
+let playerNames = {
+  A1: 'A1',
+  A2: 'A2',
+  B1: 'B1',
+  B2: 'B2'
+};
+
+
+let players = {
+  'A-right': 'A1',
+  'A-left': 'A2',
+  'B-right': 'B1',
+  'B-left': 'B2'
+};
+
+function updatePlayerNames() {
+  playerNames.A1 = document.getElementById('A1').value || 'A1';
+  playerNames.A2 = document.getElementById('A2').value || 'A2';
+  playerNames.B1 = document.getElementById('B1').value || 'B1';
+  playerNames.B2 = document.getElementById('B2').value || 'B2';
+}
+
+
 // ===== UI RENDER =====
 function renderCourt() {
-  const names = {
-    'A-right': document.getElementById('A1').value || 'A1',
-    'A-left':  document.getElementById('A2').value || 'A2',
-    'B-right': document.getElementById('B1').value || 'B1',
-    'B-left':  document.getElementById('B2').value || 'B2'
-  };
+  updatePlayerNames();
 
   ['A-left','A-right','B-left','B-right'].forEach(id => {
     const el = document.getElementById(id);
-    el.className = 'h-20 rounded bg-gray-200 flex flex-col justify-center items-center transition-all duration-300';
-    el.innerHTML = `<span class="transition-transform duration-300">${names[id]}</span>`;
+    const playerKey = players[id]; // A1, A2, B1, B2
+
+    el.className =
+      'h-20 rounded bg-gray-200 flex flex-col justify-center items-center transition-all duration-300';
+
+    el.innerHTML = `
+      <span class="transition-transform duration-300">
+        ${playerNames[playerKey]}
+      </span>
+    `;
   });
 
   const activeId = serverTeam + '-' + serveSide;
   const activeEl = document.getElementById(activeId);
-  activeEl.classList.add('bg-green-200', 'font-bold');
+  activeEl.classList.add('bg-green-200','font-bold');
   activeEl.querySelector('span').classList.add('scale-110');
-  activeEl.innerHTML += `<span class='text-xs animate-bounce'>🏸 Server</span>`;
+  activeEl.innerHTML += `<span class="text-xs animate-bounce">🏸 Server</span>`;
 }
+
+
 
 function updateUI() {
   document.getElementById('scoreA').innerText = scoreA;
@@ -107,9 +135,47 @@ function updateUI() {
 }
 
 // ===== LOGIC =====
+
+// function swapPlayers(team) {
+//   const r = team + '-right';
+//   const l = team + '-left';
+
+//   [players[r], players[l]] = [players[l], players[r]];
+
+//   // sisi servis ikut berubah karena posisi bertukar
+//   serveSide = serveSide === 'right' ? 'left' : 'right';
+// }
+
+function swapPlayers(team) {
+  const r = team + '-right';
+  const l = team + '-left';
+  [players[r], players[l]] = [players[l], players[r]];
+}
+
+
+function getServeSide(team) {
+  const score = team === 'A' ? scoreA : scoreB;
+  return score % 2 === 0 ? 'right' : 'left';
+}
+
+function swapCourtSides() {
+  const tempRight = players['A-right'];
+  const tempLeft  = players['A-left'];
+
+  players['A-right'] = players['B-right'];
+  players['A-left']  = players['B-left'];
+
+  players['B-right'] = tempRight;
+  players['B-left']  = tempLeft;
+}
+
+
+
 function checkSetWinner() {
   const diff = Math.abs(scoreA - scoreB);
-  const finish = (scoreA >= 21 || scoreB >= 21) && diff >= 2 || scoreA === 30 || scoreB === 30;
+  const finish =
+    ((scoreA >= 21 || scoreB >= 21) && diff >= 2) ||
+    scoreA === 30 || scoreB === 30;
 
   if (!finish) return;
 
@@ -121,9 +187,12 @@ function checkSetWinner() {
     serverTeam = 'B';
   }
 
+  // ✅ TUKAR SISI LAPANGAN
+  swapCourtSides();
+
   scoreA = 0;
   scoreB = 0;
-  serveSide = 'right';
+  serveSide = 'right'; // skor 0 = genap
   currentSet++;
 
   if (setA === 2 || setB === 2) {
@@ -132,18 +201,27 @@ function checkSetWinner() {
   }
 }
 
-function addPoint(team) {
-  history.push({ scoreA, scoreB, setA, setB, currentSet, serverTeam, serveSide });
 
-  if (team === 'A') {
-    scoreA++;
-    if (serverTeam === 'A') serveSide = serveSide === 'right' ? 'left' : 'right';
-    serverTeam = 'A';
+function addPoint(team) {
+  history.push({
+    scoreA, scoreB, setA, setB, currentSet, serverTeam, serveSide,
+    players: JSON.parse(JSON.stringify(players))
+  });
+
+  // Tambah skor
+  if (team === 'A') scoreA++;
+  else scoreB++;
+
+  if (team === serverTeam) {
+    // ✅ Tim servis menang → SWAP ORANG
+    swapPlayers(team);
   } else {
-    scoreB++;
-    if (serverTeam === 'B') serveSide = serveSide === 'right' ? 'left' : 'right';
-    serverTeam = 'B';
+    // ✅ Tim penerima menang → SERVIS PINDAH
+    serverTeam = team;
   }
+
+  // ✅ Tentukan sisi servis BERDASARKAN SKOR
+  serveSide = getServeSide(serverTeam);
 
   checkSetWinner();
   updateUI();
@@ -152,6 +230,7 @@ function addPoint(team) {
 function undo() {
   if (!history.length) return;
   const last = history.pop();
+
   scoreA = last.scoreA;
   scoreB = last.scoreB;
   setA = last.setA;
@@ -159,8 +238,11 @@ function undo() {
   currentSet = last.currentSet;
   serverTeam = last.serverTeam;
   serveSide = last.serveSide;
+  players = JSON.parse(JSON.stringify(last.players));
+
   updateUI();
 }
+
 
 function resetMatch() {
   scoreA = 0;
