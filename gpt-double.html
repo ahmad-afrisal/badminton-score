@@ -6,254 +6,200 @@
   <title>Badminton Doubles – Umpire Mode</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-<div class="w-full max-w-lg bg-white rounded-2xl shadow-lg p-4">
-  <h1 class="text-center font-bold text-lg mb-3">🏸 Badminton Ganda – Umpire Mode</h1>
+<div class="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
+  <h1 class="text-center font-bold text-xl mb-4 text-gray-800">🏸 Badminton Umpire</h1>
 
-  <!-- Player Names -->
-  <div class="grid grid-cols-2 gap-2 text-sm mb-3">
-    <input id="A1" placeholder="Team A - Player 1" class="border rounded p-1" />
-    <input id="A2" placeholder="Team A - Player 2" class="border rounded p-1" />
-    <input id="B1" placeholder="Team B - Player 1" class="border rounded p-1" />
-    <input id="B2" placeholder="Team B - Player 2" class="border rounded p-1" />
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <div class="p-2 bg-blue-50 rounded-lg border border-blue-100">
+      <label class="block text-[10px] font-bold text-blue-600 mb-1 uppercase text-center">Team A</label>
+      <input id="A1" placeholder="Pemain 1" class="w-full border rounded p-1 mb-1 text-sm outline-none" oninput="updateUI()" />
+      <input id="A2" placeholder="Pemain 2" class="w-full border rounded p-1 text-sm outline-none" oninput="updateUI()" />
+    </div>
+    <div class="p-2 bg-green-50 rounded-lg border border-green-100">
+      <label class="block text-[10px] font-bold text-green-600 mb-1 uppercase text-center">Team B</label>
+      <input id="B1" placeholder="Pemain 1" class="w-full border rounded p-1 mb-1 text-sm outline-none" oninput="updateUI()" />
+      <input id="B2" placeholder="Pemain 2" class="w-full border rounded p-1 text-sm outline-none" oninput="updateUI()" />
+    </div>
   </div>
 
-  <!-- Score -->
-  <div class="flex justify-between items-center mb-2">
+  <div class="flex justify-between items-center mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
     <div class="text-center">
-      <p class="text-sm">Team A</p>
-      <p id="scoreA" class="text-4xl font-bold">0</p>
-      <p id="setA" class="text-xs">Set: 0</p>
+      <p class="text-xs font-bold text-blue-600 uppercase">Team A</p>
+      <p id="scoreA" class="text-5xl font-extrabold text-gray-800">0</p>
+      <p id="setA" class="text-sm font-semibold text-gray-500">Set: 0</p>
     </div>
     <div class="text-center">
-      <p class="text-xs">SET</p>
-      <div class="flex gap-1">
-        <span id="set1" class="px-2 py-1 rounded bg-blue-500 text-white">1</span>
-        <span id="set2" class="px-2 py-1 rounded bg-gray-200">2</span>
-        <span id="set3" class="px-2 py-1 rounded bg-gray-200">3</span>
+      <div id="currentSetLabel" class="text-xs font-bold bg-gray-200 px-3 py-1 rounded-full mb-2">SET 1</div>
+      <div class="flex gap-1 justify-center">
+        <span id="set1_dot" class="w-3 h-3 rounded-full bg-blue-500"></span>
+        <span id="set2_dot" class="w-3 h-3 rounded-full bg-gray-300"></span>
+        <span id="set3_dot" class="w-3 h-3 rounded-full bg-gray-300"></span>
       </div>
     </div>
     <div class="text-center">
-      <p class="text-sm">Team B</p>
-      <p id="scoreB" class="text-4xl font-bold">0</p>
-      <p id="setB" class="text-xs">Set: 0</p>
+      <p class="text-xs font-bold text-green-600 uppercase">Team B</p>
+      <p id="scoreB" class="text-5xl font-extrabold text-gray-800">0</p>
+      <p id="setB" class="text-sm font-semibold text-gray-500">Set: 0</p>
     </div>
   </div>
 
-  <!-- Court -->
-  <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
-    <div id="A-left" class="h-20 rounded bg-gray-200 flex flex-col justify-center items-center transition-all duration-300"></div>
-    <div id="A-right" class="h-20 rounded bg-gray-200 flex flex-col justify-center items-center transition-all duration-300"></div>
-    <div id="B-left" class="h-20 rounded bg-gray-200 flex flex-col justify-center items-center transition-all duration-300"></div>
-    <div id="B-right" class="h-20 rounded bg-gray-200 flex flex-col justify-center items-center transition-all duration-300"></div>
+  <div id="courtContainer" class="flex flex-col gap-2 mb-6">
+    <div id="topRow" class="grid grid-cols-2 gap-2">
+       <div id="A-left" class="h-24 rounded shadow-inner flex flex-col justify-center items-center transition-all duration-500"></div>
+       <div id="A-right" class="h-24 rounded shadow-inner flex flex-col justify-center items-center transition-all duration-500"></div>
+    </div>
+    <div id="bottomRow" class="grid grid-cols-2 gap-2">
+       <div id="B-left" class="h-24 rounded shadow-inner flex flex-col justify-center items-center transition-all duration-500"></div>
+       <div id="B-right" class="h-24 rounded shadow-inner flex flex-col justify-center items-center transition-all duration-500"></div>
+    </div>
   </div>
 
-  <!-- Controls -->
-  <div class="grid grid-cols-2 gap-2">
-    <button onclick="addPoint('A')" class="bg-blue-600 text-white rounded py-2">Point Team A</button>
-    <button onclick="addPoint('B')" class="bg-green-600 text-white rounded py-2">Point Team B</button>
+  <div class="grid grid-cols-2 gap-3 mb-3">
+    <button onclick="addPoint('A')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">Point Team A</button>
+    <button onclick="addPoint('B')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">Point Team B</button>
   </div>
 
-  <div class="grid grid-cols-2 gap-2 mt-2">
-    <button onclick="undo()" class="bg-yellow-400 rounded py-1">Undo</button>
-    <button onclick="resetMatch()" class="bg-red-500 text-white rounded py-1">Reset</button>
+  <div class="grid grid-cols-2 gap-3">
+    <button onclick="undo()" class="bg-white border-2 border-gray-200 hover:bg-gray-50 text-gray-700 font-bold py-2 rounded-xl transition active:scale-95">Undo</button>
+    <button onclick="resetMatch()" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2 rounded-xl transition active:scale-95">Reset Match</button>
   </div>
 </div>
 
 <script>
-// ===== STATE =====
 let scoreA = 0, scoreB = 0;
 let setA = 0, setB = 0;
 let currentSet = 1;
 let serverTeam = 'A';
-let serveSide = 'right'; // right | left
+let serveSide = 'right';
+let isSwapped = false; // Status posisi lapangan
 let history = [];
 
-let playerNames = {
-  A1: 'A1',
-  A2: 'A2',
-  B1: 'B1',
-  B2: 'B2'
-};
-
-
 let players = {
-  'A-right': 'A1',
-  'A-left': 'A2',
-  'B-right': 'B1',
-  'B-left': 'B2'
+  'A-right': 'A1', 'A-left': 'A2',
+  'B-right': 'B1', 'B-left': 'B2'
 };
-
-function updatePlayerNames() {
-  playerNames.A1 = document.getElementById('A1').value || 'A1';
-  playerNames.A2 = document.getElementById('A2').value || 'A2';
-  playerNames.B1 = document.getElementById('B1').value || 'B1';
-  playerNames.B2 = document.getElementById('B2').value || 'B2';
-}
-
-
-// ===== UI RENDER =====
-function renderCourt() {
-  updatePlayerNames();
-
-  ['A-left','A-right','B-left','B-right'].forEach(id => {
-    const el = document.getElementById(id);
-    const playerKey = players[id]; // A1, A2, B1, B2
-
-    el.className =
-      'h-20 rounded bg-gray-200 flex flex-col justify-center items-center transition-all duration-300';
-
-    el.innerHTML = `
-      <span class="transition-transform duration-300">
-        ${playerNames[playerKey]}
-      </span>
-    `;
-  });
-
-  const activeId = serverTeam + '-' + serveSide;
-  const activeEl = document.getElementById(activeId);
-  activeEl.classList.add('bg-green-200','font-bold');
-  activeEl.querySelector('span').classList.add('scale-110');
-  activeEl.innerHTML += `<span class="text-xs animate-bounce">🏸 Server</span>`;
-}
-
-
 
 function updateUI() {
   document.getElementById('scoreA').innerText = scoreA;
   document.getElementById('scoreB').innerText = scoreB;
   document.getElementById('setA').innerText = 'Set: ' + setA;
   document.getElementById('setB').innerText = 'Set: ' + setB;
+  document.getElementById('currentSetLabel').innerText = 'SET ' + currentSet;
 
-  ['set1','set2','set3'].forEach((id, i) => {
-    document.getElementById(id).className =
-      'px-2 py-1 rounded ' + (i + 1 === currentSet ? 'bg-blue-500 text-white' : 'bg-gray-200');
-  });
+  // Dot Indicator
+  for(let i=1; i<=3; i++) {
+    document.getElementById(`set${i}_dot`).className = `w-3 h-3 rounded-full ${i === currentSet ? 'bg-blue-500' : 'bg-gray-300'}`;
+  }
+
+  // Tukar Posisi Visual Lapangan
+  const container = document.getElementById('courtContainer');
+  container.className = isSwapped ? "flex flex-col-reverse gap-2 mb-6" : "flex flex-col gap-2 mb-6";
 
   renderCourt();
 }
 
-// ===== LOGIC =====
+function renderCourt() {
+  const names = {
+    A1: document.getElementById('A1').value || 'A1',
+    A2: document.getElementById('A2').value || 'A2',
+    B1: document.getElementById('B1').value || 'B1',
+    B2: document.getElementById('B2').value || 'B2'
+  };
 
-// function swapPlayers(team) {
-//   const r = team + '-right';
-//   const l = team + '-left';
+  ['A-left','A-right','B-left','B-right'].forEach(id => {
+    const el = document.getElementById(id);
+    const playerKey = players[id];
+    const isTeamA = id.startsWith('A');
 
-//   [players[r], players[l]] = [players[l], players[r]];
+    el.className = `h-24 rounded-lg flex flex-col justify-center items-center transition-all duration-500 border-2 ${
+      isTeamA ? 'bg-blue-50 border-blue-100' : 'bg-green-50 border-green-100'
+    }`;
 
-//   // sisi servis ikut berubah karena posisi bertukar
-//   serveSide = serveSide === 'right' ? 'left' : 'right';
-// }
-
-function swapPlayers(team) {
-  const r = team + '-right';
-  const l = team + '-left';
-  [players[r], players[l]] = [players[l], players[r]];
-}
-
-
-function getServeSide(team) {
-  const score = team === 'A' ? scoreA : scoreB;
-  return score % 2 === 0 ? 'right' : 'left';
-}
-
-function swapCourtSides() {
-  const tempRight = players['A-right'];
-  const tempLeft  = players['A-left'];
-
-  players['A-right'] = players['B-right'];
-  players['A-left']  = players['B-left'];
-
-  players['B-right'] = tempRight;
-  players['B-left']  = tempLeft;
-}
-
-
-
-function checkSetWinner() {
-  const diff = Math.abs(scoreA - scoreB);
-  const finish =
-    ((scoreA >= 21 || scoreB >= 21) && diff >= 2) ||
-    scoreA === 30 || scoreB === 30;
-
-  if (!finish) return;
-
-  if (scoreA > scoreB) {
-    setA++;
-    serverTeam = 'A';
-  } else {
-    setB++;
-    serverTeam = 'B';
-  }
-
-  // ✅ TUKAR SISI LAPANGAN
-  swapCourtSides();
-
-  scoreA = 0;
-  scoreB = 0;
-  serveSide = 'right'; // skor 0 = genap
-  currentSet++;
-
-  if (setA === 2 || setB === 2) {
-    alert((setA === 2 ? 'Team A' : 'Team B') + ' menang pertandingan');
-    resetMatch();
-  }
-}
-
-
-function addPoint(team) {
-  history.push({
-    scoreA, scoreB, setA, setB, currentSet, serverTeam, serveSide,
-    players: JSON.parse(JSON.stringify(players))
+    el.innerHTML = `
+      <span class="text-[9px] uppercase font-black ${isTeamA ? 'text-blue-400' : 'text-green-400'}">${isTeamA ? 'Team A' : 'Team B'}</span>
+      <span class="font-bold text-gray-700">${names[playerKey]}</span>
+    `;
   });
 
-  // Tambah skor
-  if (team === 'A') scoreA++;
-  else scoreB++;
+  const activeId = serverTeam + '-' + serveSide;
+  const activeEl = document.getElementById(activeId);
+  if(activeEl) {
+    activeEl.classList.remove('bg-blue-50', 'bg-green-50');
+    activeEl.classList.add('bg-yellow-300', 'border-yellow-500', 'scale-105', 'shadow-md', 'z-10');
+    activeEl.innerHTML += `<span class="text-[10px] font-black text-yellow-800 animate-pulse">🏸 SERVER</span>`;
+  }
+}
+
+function addPoint(team) {
+  saveHistory();
+  
+  if (team === 'A') scoreA++; else scoreB++;
 
   if (team === serverTeam) {
-    // ✅ Tim servis menang → SWAP ORANG
-    swapPlayers(team);
+    swapPositionsInsideTeam(team);
   } else {
-    // ✅ Tim penerima menang → SERVIS PINDAH
     serverTeam = team;
   }
-
-  // ✅ Tentukan sisi servis BERDASARKAN SKOR
-  serveSide = getServeSide(serverTeam);
+  
+  const currentScore = (team === 'A') ? scoreA : scoreB;
+  serveSide = (currentScore % 2 === 0) ? 'right' : 'left';
 
   checkSetWinner();
   updateUI();
 }
 
-function undo() {
-  if (!history.length) return;
-  const last = history.pop();
+function swapPositionsInsideTeam(team) {
+  const r = team + '-right';
+  const l = team + '-left';
+  [players[r], players[l]] = [players[l], players[r]];
+}
 
-  scoreA = last.scoreA;
-  scoreB = last.scoreB;
-  setA = last.setA;
-  setB = last.setB;
+function checkSetWinner() {
+  const diff = Math.abs(scoreA - scoreB);
+  const isOver = ((scoreA >= 21 || scoreB >= 21) && diff >= 2) || scoreA === 30 || scoreB === 30;
+
+  if (isOver) {
+    const winner = scoreA > scoreB ? 'A' : 'B';
+    if (winner === 'A') setA++; else setB++;
+
+    if (setA === 2 || setB === 2) {
+      alert("Pertandingan Selesai! Pemenang: Team " + winner);
+      resetMatch();
+    } else {
+      alert("Set Selesai. Tukar Sisi Lapangan!");
+      // LOGIKA PINDAH LAPANGAN:
+      isSwapped = !isSwapped; 
+      scoreA = 0; scoreB = 0;
+      currentSet++;
+      serverTeam = winner;
+      serveSide = 'right';
+      // Kembalikan posisi pemain ke default untuk set baru
+      players = { 'A-right': 'A1', 'A-left': 'A2', 'B-right': 'B1', 'B-left': 'B2' };
+    }
+  }
+}
+
+function saveHistory() {
+  history.push(JSON.stringify({ scoreA, scoreB, setA, setB, currentSet, serverTeam, serveSide, isSwapped, players }));
+}
+
+function undo() {
+  if (history.length === 0) return;
+  const last = JSON.parse(history.pop());
+  scoreA = last.scoreA; scoreB = last.scoreB;
+  setA = last.setA; setB = last.setB;
   currentSet = last.currentSet;
   serverTeam = last.serverTeam;
   serveSide = last.serveSide;
-  players = JSON.parse(JSON.stringify(last.players));
-
+  isSwapped = last.isSwapped;
+  players = last.players;
   updateUI();
 }
 
-
 function resetMatch() {
-  scoreA = 0;
-  scoreB = 0;
-  setA = 0;
-  setB = 0;
-  currentSet = 1;
-  serverTeam = 'A';
-  serveSide = 'right';
-  history = [];
-  updateUI();
+  if(confirm("Reset seluruh data?")) location.reload();
 }
 
 updateUI();
